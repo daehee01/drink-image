@@ -12,6 +12,9 @@
 
 ## GitHub Pages 연결
 
+연결 저장소: https://github.com/daehee01/drink-image
+배포 후 예상 주소: https://daehee01.github.io/drink-image/ (현재 배포 전)
+
 1. 이 폴더의 내용만 새 GitHub 저장소의 루트에 올립니다. 상위 agent-ops 폴더나 .env는 올리지 않습니다.
 2. 저장소 Settings → Pages → Build and deployment → Source를 **GitHub Actions**로 선택합니다.
 3. main 브랜치에 push하거나 Actions → Deploy Bottle Studio → Run workflow를 실행합니다.
@@ -40,4 +43,5 @@ IMG.LY `@imgly/background-removal@1.7.0`, `onnxruntime-web@1.21.0`을 esm.sh에�
 - 실제 Chrome에서 합성 병 이미지로 CDN 모델 다운로드 및 AI 배경 제거 성공.
 - 투명 PNG 업로드부터 다운로드까지 검증: 결과 700×700, 상단/하단 병 픽셀 존재, 모서리 투명, 한글 파일명과 확장자 정상.
 - 390px 모바일 화면 가로 넘침 없음, 데스크톱 미리보기 확인.
-- 실제 상품 사진의 배경 제거 품질은 사진별 확인이 필요합니다. GitHub Pages 온라인 배포는 저장소 지정 후 진행합니다.
+- 이미지 붙여넣기 이벤트부터 PNG 생성까지 Chrome 검증. 버튼의 클립보드 API는 테스트 대역으로 이미지·빈 클립보드·권한 거절을 검증했으며, 파일명 텍스트 붙여넣기 기본 동작 보존 확인.
+- 실제 상품 사진의 배경 제거 품질은 사진별 확인이 필요합니다. GitHub Pages 온라인 배포는 저장소 쓰기 권한 연결 후 진행합니다.
