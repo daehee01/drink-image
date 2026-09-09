@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#193d32">
+  <title>Bottle Studio · 병 이미지 편집</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23214c3c'/%3E%3Ctext x='13' y='48' font-family='Georgia' font-size='49' fill='white'%3Eb.%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header><a class="brand" href="./"><span class="brand-icon">b.</span> Bottle Studio</a><span class="tag">PRODUCT IMAGE TOOL</span></header>
+  <main>
+    <section class="intro"><span class="eyebrow">한 장의 사진, 바로 쓰는 상품 이미지</span><h1>병 사진을 올리면,<br><em>깔끔한 700 × 700.</em></h1><p>배경은 지우고, 병은 정중앙에.<br>상품 등록에 필요한 투명 PNG를 간편하게 만들어 보세요.</p></section>
+    <div class="workspace">
+      <section class="controls" aria-label="이미지 편집 설정">
+        <div class="step-title"><span>01</span><h2>이미지 업로드</h2></div>
+        <label class="dropzone" id="dropzone" for="file"><span class="upload-icon">↑</span><strong>클릭하거나 이미지를 끌어오세요</strong><span>JPG, PNG, WebP · 최대 20MB</span><input id="file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+        <p class="file-info" id="fileInfo">배경과 병이 구분되는 사진이 좋아요.</p>
+        <label class="check"><input type="checkbox" id="skip"> 이미 배경이 투명한 PNG예요</label>
+        <button id="process" class="primary" disabled>배경 제거하고 크기 맞추기 <span>↗</span></button>
+        <button id="cancel" class="secondary" hidden>처리 취소</button>
+        <div class="status" role="status" aria-live="polite"><span id="status">이미지를 선택하면 시작할 수 있어요.</span><progress id="progress" hidden></progress></div>
+        <div class="divider"></div>
+        <div class="step-title"><span>02</span><h2>PNG 다운로드</h2></div>
+        <label class="field-label" for="filename">저장할 파일명</label><div class="filename"><input id="filename" value="bottle-700" maxlength="100" autocomplete="off"><span>.png</span></div>
+        <button id="download" class="download" disabled>↓ &nbsp; PNG 다운로드</button>
+        <p class="small">700 × 700px · 투명 배경 · 원본 비율 유지</p>
+      </section>
+      <section class="preview-panel" aria-label="이미지 미리보기"><div class="preview-header"><h2>미리보기</h2><div class="tabs"><button id="originalTab" aria-pressed="false" disabled>원본</button><button id="resultTab" aria-pressed="true">결과</button></div></div>
+        <div class="preview checker" id="preview"><div class="empty" id="empty"><svg width="70" height="116" viewBox="0 0 70 116" fill="none" aria-hidden="true"><path d="M27 5h16v27c0 12 16 16 16 30v41a8 8 0 0 1-8 8H19a8 8 0 0 1-8-8V62c0-14 16-18 16-30V5Z" stroke="currentColor" stroke-width="2"/><path d="M26 12h18M11 67h48v26H11" stroke="currentColor" stroke-width="2"/></svg><strong>상품 이미지가 완성될 자리</strong><span>이미지를 업로드해 시작하세요</span></div><img id="original" alt="업로드한 원본 이미지" hidden><canvas id="result" width="700" height="700" aria-label="700×700 투명 PNG 결과" hidden></canvas></div>
+        <div class="preview-footer"><span id="previewCaption">체크무늬는 투명 배경을 나타냅니다</span><strong>700 × 700 px</strong></div>
+      </section>
+    </div>
+    <div class="notes"><div><b>정확한 사이즈</b><p>병의 위아래 끝을 높이 700px에 맞춰요.</p></div><div><b>내 기기에서 처리</b><p>사진을 서버로 전송하지 않아요.</p></div><div><b>처음 한 번만 준비</b><p>첫 배경 제거 시 AI 모델을 내려받아요.</p></div></div>
+  </main><footer><span>Bottle Studio</span><span>Background removal by <a href="https://github.com/imgly/background-removal-js" target="_blank" rel="noreferrer">IMG.LY</a> · <a href="./source.zip">소스 코드</a></span></footer>
+  <script type="module" src="./app.js"></script>
+</body></html>
