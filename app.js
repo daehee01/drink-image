@@ -1,6 +1,6 @@
 import { alphaBounds, fitHeight, pngFilename } from './image-utils.js';
 const $ = id => document.getElementById(id);
-let selected = null, originalURL = null, outputURL = null, busy = false, worker = null, selection = 0;
+let selected = null, originalURL = null, outputURL = null, busy = false, worker = null, selection = 0, readingClipboard = false;
 const status = (message, error = false) => { $('status').textContent = message; $('status').parentElement.classList.toggle('error', error); };
 function showTab(original) {
   $('original').hidden = !original || !selected;
@@ -16,6 +16,7 @@ function clearResult() {
 }
 function setBusy(value) {
   busy = value; $('file').disabled = value; $('skip').disabled = value;
+  $('paste').disabled = value || readingClipboard;
   $('process').disabled = value || !selected; $('cancel').hidden = !value;
   $('progress').hidden = !value;
   if (value) $('progress').removeAttribute('value');
@@ -95,6 +96,40 @@ $('process').onclick = async () => {
   } finally { worker?.terminate(); worker = null; setBusy(false); }
 };
 $('file').onchange = event => { selectFile(event.target.files[0]); event.target.value = ''; };
+function clipboardFile(blob) {
+  const extension = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[blob.type] || 'png';
+  return new File([blob], `붙여넣기-${Date.now()}.${extension}`, { type: blob.type });
+}
+document.addEventListener('paste', event => {
+  const item = Array.from(event.clipboardData?.items || []).find(item => item.kind === 'file' && item.type.startsWith('image/'));
+  if (!item) return; // Keep normal text paste, including the filename field.
+  event.preventDefault();
+  if (busy) return;
+  const file = item.getAsFile();
+  if (file) selectFile(clipboardFile(file));
+});
+$('paste').onclick = async () => {
+  if (busy || readingClipboard) return;
+  if (!navigator.clipboard?.read) return status('이 브라우저에서는 ⌘V 또는 Ctrl+V로 이미지를 붙여넣어 주세요.');
+  readingClipboard = true; $('paste').disabled = true;
+  const previousSelection = selection;
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const type = item.types.find(type => ['image/png', 'image/jpeg', 'image/webp'].includes(type));
+      if (!type) continue;
+      const blob = await item.getType(type);
+      if (busy || previousSelection !== selection) return;
+      await selectFile(clipboardFile(blob));
+      return;
+    }
+    if (!busy && previousSelection === selection) status('복사된 이미지가 없어요. 이미지 자체를 복사하거나 스크린샷을 복사한 뒤 다시 눌러 주세요.', true);
+  } catch (error) {
+    if (!busy && previousSelection === selection) status(error.name === 'NotAllowedError'
+      ? '클립보드 접근이 허용되지 않았어요. ⌘V 또는 Ctrl+V로 붙여넣어 주세요.'
+      : '클립보드를 읽지 못했어요. ⌘V 또는 Ctrl+V로 붙여넣어 주세요.', true);
+  } finally { readingClipboard = false; $('paste').disabled = busy; }
+};
 for (const name of ['dragenter', 'dragover']) $('dropzone').addEventListener(name, event => { event.preventDefault(); if (!busy) $('dropzone').classList.add('drag'); });
 for (const name of ['dragleave', 'drop']) $('dropzone').addEventListener(name, event => { event.preventDefault(); $('dropzone').classList.remove('drag'); });
 $('dropzone').addEventListener('drop', event => selectFile(event.dataTransfer.files[0]));
