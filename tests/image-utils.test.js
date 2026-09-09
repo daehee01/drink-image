@@ -15,5 +15,5 @@ test('wide objects keep aspect ratio and crop equally on both sides', () => asse
 test('filenames preserve Korean and normalize extensions and path characters', () => {
   assert.equal(pngFilename(' 우리술.png.png '), '우리술.png');
   assert.equal(pngFilename('a/b:c'), 'a-b-c.png');
-  assert.equal(pngFilename('...'), 'bottle-700.png');
+  assert.equal(pngFilename('...'), '상품이미지-700.png');
 });

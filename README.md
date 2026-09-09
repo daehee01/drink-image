@@ -1,4 +1,4 @@
-# Bottle Studio
+# 상품 이미지 만들기
 
 병 사진 업로드·붙여넣기 → 브라우저 AI 배경 제거 → 700×700 투명 캔버스 정렬 → 이름을 지정해 PNG 다운로드.
 
@@ -17,7 +17,7 @@
 
 1. 이 폴더의 내용만 새 GitHub 저장소의 루트에 올립니다. 상위 agent-ops 폴더나 .env는 올리지 않습니다.
 2. 저장소 Settings → Pages → Build and deployment → Source를 **GitHub Actions**로 선택합니다.
-3. main 브랜치에 push하거나 Actions → Deploy Bottle Studio → Run workflow를 실행합니다.
+3. main 브랜치에 push하거나 Actions → 상품 이미지 만들기 배포 → Run workflow를 실행합니다.
 4. Actions 완료 후 배포 URL `https://<계정>.github.io/<저장소>/`을 확인합니다.
 
 `.github/workflows/pages.yml`에 자동 테스트와 배포가 포함되어 있습니다. 배포 시 해당 커밋 전체 소스 ZIP을 생성하고 사이트 하단에서 제공합니다.
@@ -30,6 +30,10 @@
 - 결과 캔버스는 항상 700×700px, PNG, 투명 배경입니다. 가로가 더 긴 물체는 높이 기준을 유지하며 좌우를 동일하게 자르고 안내합니다.
 - 이미 투명한 PNG는 배경 제거를 건너뛸 수 있습니다. 체크무늬는 미리보기 CSS이며 다운로드에는 포함되지 않습니다.
 - 병 하나가 크게 보이는 사진을 권장합니다. AI가 남긴 그림자/다른 물체도 경계에 포함될 수 있으며 투명 유리나 복잡한 배경은 결과 확인이 필요합니다.
+
+## 디자인
+
+화면은 Veluga 디자인 시스템(`VDS/`) 토큰을 따릅니다. 배경 `--gray-000`, 화이트 카드와 헤어라인 테두리(#E9EDEF), CTA에만 쓰는 그린 `#4C6844`, 상품 이미지 배경 베이지 `#F6F2ED`(미리보기 체크무늬), Input·Button 6px·Card 12/16px 라디우스를 사용합니다. 서체 Pretendard Variable은 `assets/fonts/PretendardVariable.woff2`로 함께 배포하므로 외부 폰트 CDN에 의존하지 않습니다. 화면 문구는 한국어 `~해요` 어투로만 작성하며 영문 브랜드 표기를 두지 않습니다.
 
 ## 의존성
 
@@ -44,6 +48,10 @@ IMG.LY `@imgly/background-removal@1.7.0`, `onnxruntime-web@1.21.0`을 esm.sh에�
 - 투명 PNG 업로드부터 다운로드까지 검증: 결과 700×700, 상단/하단 병 픽셀 존재, 모서리 투명, 한글 파일명과 확장자 정상.
 - 390px 모바일 화면 가로 넘침 없음, 데스크톱 미리보기 확인.
 - 이미지 붙여넣기 이벤트부터 PNG 생성까지 Chrome 검증. 버튼의 클립보드 API는 테스트 대역으로 이미지·빈 클립보드·권한 거절을 검증했으며, 파일명 텍스트 붙여넣기 기본 동작 보존 확인.
-- GitHub Pages 배포 완료: `Deploy Bottle Studio` 워크플로가 커밋 `b454560`에서 success로 끝났고,
+- GitHub Pages 배포 완료: `상품 이미지 만들기 배포` 워크플로가 커밋 `b454560`에서 success로 끝났고,
   배포본의 `index.html`·`style.css`·`app.js`·`image-utils.js`·`removal-worker.js`가 로컬 파일과 SHA-256 일치함. `source.zip`도 정상 제공.
 - 실제 상품 사진의 배경 제거 품질은 사진별 확인이 필요합니다.
+
+## 변경 기록
+
+- 2026-09-09: 상단 홍보 문구 삭제, 영문 브랜드 표기 제거, Veluga 디자인 시스템 토큰으로 화면 재구성. 기본 파일명 `상품이미지-700`.

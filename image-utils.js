@@ -15,5 +15,5 @@ export function fitHeight(bounds, size = 700) {
 }
 export function pngFilename(value) {
   const name = value.trim().replace(/(?:\.png)+$/i, '').replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/[. ]+$/g, '').slice(0, 100);
-  return `${name || 'bottle-700'}.png`;
+  return `${name || '상품이미지-700'}.png`;
 }

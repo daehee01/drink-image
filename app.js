@@ -8,7 +8,7 @@ function showTab(original) {
   $('empty').hidden = Boolean(original ? selected : outputURL);
   $('originalTab').setAttribute('aria-pressed', String(original));
   $('resultTab').setAttribute('aria-pressed', String(!original));
-  $('previewCaption').textContent = original ? '업로드한 원본 이미지' : '체크무늬는 투명 배경을 나타냅니다';
+  $('previewCaption').textContent = original ? '업로드한 원본 이미지' : '체크무늬는 투명 배경이에요';
 }
 function clearResult() {
   if (outputURL) URL.revokeObjectURL(outputURL);
@@ -23,7 +23,7 @@ function setBusy(value) {
 }
 async function selectFile(file) {
   if (!file || busy) return;
-  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return status('JPG, PNG, WebP 파일을 선택해 주세요.', true);
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return status('JPG, PNG, WebP 형식만 사용할 수 있어요.', true);
   if (file.size > 20 * 1024 * 1024) return status('20MB 이하의 이미지를 선택해 주세요.', true);
   const token = ++selection;
   try {
@@ -47,7 +47,7 @@ function remove(blob) {
       else if (data.type === 'error') reject(new Error(data.message));
       else if (data.type === 'progress') {
         const downloading = data.key.startsWith('fetch:');
-        status(downloading ? 'AI 모델을 준비하고 있어요. 첫 실행은 몇 분 걸릴 수 있어요.' : '병과 배경을 분리하고 있어요…');
+        status(downloading ? '처리 모델을 준비하고 있어요. 첫 실행은 몇 분 걸릴 수 있어요.' : '병과 배경을 분리하고 있어요…');
         if (downloading && data.total > 0 && data.current < data.total) { $('progress').max = data.total; $('progress').value = data.current; }
         else $('progress').removeAttribute('value');
       }
@@ -86,10 +86,10 @@ $('process').onclick = async () => {
     out.imageSmoothingEnabled = true; out.imageSmoothingQuality = 'high';
     out.drawImage(source, bounds.x, bounds.y, bounds.width, bounds.height, dest.x, 0, dest.width, 700);
     const png = await new Promise(resolve => $('result').toBlob(resolve, 'image/png'));
-    if (!png) throw new Error('PNG 생성에 실패했어요. 다시 시도해 주세요.');
+    if (!png) throw new Error('이미지 생성에 실패했어요. 다시 시도해 주세요.');
     if (cancelled) throw new DOMException('취소됨', 'AbortError');
     outputURL = URL.createObjectURL(png); $('download').disabled = false; showTab(false);
-    status(dest.width > 700 ? '완료! 가로가 넓어 좌우 일부가 잘렸어요. 미리보기를 확인하세요.' : '완료! 파일명을 정하고 PNG를 다운로드하세요.');
+    status(dest.width > 700 ? '완료! 가로가 넓어 좌우 일부가 잘렸어요. 미리보기를 확인하세요.' : '완료! 파일명을 정하고 이미지를 내려받으세요.');
   } catch (error) {
     if (error.name === 'AbortError') status('처리를 취소했어요. 다시 시작할 수 있어요.');
     else { console.error(error); status(`${error.message} 인터넷 연결을 확인하거나 다른 사진으로 다시 시도해 주세요.`, true); }
