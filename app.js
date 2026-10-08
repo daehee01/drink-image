@@ -66,8 +66,12 @@ async function normalizeInput(file) {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
   const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const blob = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('이미지 변환에 실패했어요.')), 'image/png'));
-  return { blob, pixels };
+  const toBlob = () => new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('이미지 변환에 실패했어요.')), 'image/png'));
+  const blob = await toBlob();
+  // The model reads transparent pixels as black, which makes dark caps look like
+  // background and dark shadows look like bottle. Show it the image on white.
+  ctx.globalCompositeOperation = 'destination-over'; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return { blob, flat: await toBlob(), pixels };
 }
 $('process').onclick = async () => {
   if (!selected || busy) return;
@@ -77,14 +81,15 @@ $('process').onclick = async () => {
   try {
     const input = await normalizeInput(selected);
     if (cancelled) throw new DOMException('취소됨', 'AbortError');
-    const blob = $('skip').checked ? input.blob : await remove(input.blob);
+    const blob = $('skip').checked ? input.blob : await remove(input.flat);
     if (cancelled) throw new DOMException('취소됨', 'AbortError');
     const bitmap = await createImageBitmap(blob);
     const source = document.createElement('canvas'); source.width = input.pixels.width; source.height = input.pixels.height;
     const ctx = source.getContext('2d', { willReadFrequently: true }); ctx.drawImage(bitmap, 0, 0, source.width, source.height); bitmap.close();
     const pixels = ctx.getImageData(0, 0, source.width, source.height);
     if ($('skip').checked && !pixels.data.some((value, i) => i % 4 === 3 && value < 255)) throw new Error('투명 배경이 없는 이미지예요. 체크를 해제하고 배경을 제거해 주세요.');
-    cleanAlpha(pixels.data, input.pixels.data, $('shadow').checked ? 64 : 0); ctx.putImageData(pixels, 0, 0);
+    // Colors come from the source; the model only contributes its mask.
+    cleanAlpha(input.pixels.data, pixels.data, $('shadow').checked ? 64 : 0); ctx.putImageData(input.pixels, 0, 0);
     const bounds = alphaBounds(pixels.data, source.width, source.height), dest = fitHeight(bounds);
     const out = $('result').getContext('2d'); out.clearRect(0, 0, 700, 700);
     out.imageSmoothingEnabled = true; out.imageSmoothingQuality = 'high';
