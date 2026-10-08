@@ -1,4 +1,4 @@
-import { alphaBounds, fitHeight, pngFilename } from './image-utils.js';
+import { alphaBounds, cleanAlpha, fitHeight, pngFilename } from './image-utils.js';
 const $ = id => document.getElementById(id);
 let selected = null, originalURL = null, outputURL = null, busy = false, worker = null, selection = 0, readingClipboard = false;
 const status = (message, error = false) => { $('status').textContent = message; $('status').parentElement.classList.toggle('error', error); };
@@ -15,7 +15,7 @@ function clearResult() {
   outputURL = null; $('download').disabled = true; $('result').hidden = true;
 }
 function setBusy(value) {
-  busy = value; $('file').disabled = value; $('skip').disabled = value;
+  busy = value; $('file').disabled = value; $('skip').disabled = value; $('shadow').disabled = value;
   $('paste').disabled = value || readingClipboard;
   $('process').disabled = value || !selected; $('cancel').hidden = !value;
   $('progress').hidden = !value;
@@ -63,8 +63,11 @@ async function normalizeInput(file) {
   const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
-  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('이미지 변환에 실패했어요.')), 'image/png'));
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const blob = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('이미지 변환에 실패했어요.')), 'image/png'));
+  return { blob, pixels };
 }
 $('process').onclick = async () => {
   if (!selected || busy) return;
@@ -74,13 +77,14 @@ $('process').onclick = async () => {
   try {
     const input = await normalizeInput(selected);
     if (cancelled) throw new DOMException('취소됨', 'AbortError');
-    const blob = $('skip').checked ? input : await remove(input);
+    const blob = $('skip').checked ? input.blob : await remove(input.blob);
     if (cancelled) throw new DOMException('취소됨', 'AbortError');
     const bitmap = await createImageBitmap(blob);
-    const source = document.createElement('canvas'); source.width = bitmap.width; source.height = bitmap.height;
-    const ctx = source.getContext('2d', { willReadFrequently: true }); ctx.drawImage(bitmap, 0, 0); bitmap.close();
+    const source = document.createElement('canvas'); source.width = input.pixels.width; source.height = input.pixels.height;
+    const ctx = source.getContext('2d', { willReadFrequently: true }); ctx.drawImage(bitmap, 0, 0, source.width, source.height); bitmap.close();
     const pixels = ctx.getImageData(0, 0, source.width, source.height);
     if ($('skip').checked && !pixels.data.some((value, i) => i % 4 === 3 && value < 255)) throw new Error('투명 배경이 없는 이미지예요. 체크를 해제하고 배경을 제거해 주세요.');
+    cleanAlpha(pixels.data, input.pixels.data, $('shadow').checked ? 64 : 0); ctx.putImageData(pixels, 0, 0);
     const bounds = alphaBounds(pixels.data, source.width, source.height), dest = fitHeight(bounds);
     const out = $('result').getContext('2d'); out.clearRect(0, 0, 700, 700);
     out.imageSmoothingEnabled = true; out.imageSmoothingQuality = 'high';

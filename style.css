@@ -165,6 +165,7 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em }
 .file-info { font-size: 13px; color: var(--gray-600); margin: 12px 0 16px; overflow-wrap: anywhere }
 .check { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--gray-800); margin-bottom: 16px }
 .check input { accent-color: var(--green-500); width: 16px; height: 16px; margin: 0 }
+.check:has(+ .check) { margin-bottom: 8px }
 
 .status { min-height: 40px; margin-top: 12px; font-size: 13px; color: var(--gray-600); overflow-wrap: anywhere }
 .status.error { color: var(--red-600) }

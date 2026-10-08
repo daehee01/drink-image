@@ -9,6 +9,16 @@ export function alphaBounds(data, width, height, threshold = 8) {
   if (right < 0) throw new Error('병을 찾지 못했어요. 다른 사진으로 시도해 주세요.');
   return { x: left, y: top, width: right - left + 1, height: bottom - top + 1 };
 }
+// The removal model replaces the source alpha with its own mask, so a faint
+// baked-in shadow comes back nearly opaque. Keep the more transparent value,
+// then drop what is still faint (soft shadows, haze) when cutoff > 0.
+export function cleanAlpha(data, source, cutoff = 0) {
+  for (let i = 3; i < data.length; i += 4) {
+    const alpha = Math.min(data[i], source[i]);
+    data[i] = alpha < cutoff ? 0 : alpha;
+  }
+  return data;
+}
 export function fitHeight(bounds, size = 700) {
   const width = bounds.width * size / bounds.height;
   return { x: (size - width) / 2, y: 0, width, height: size };

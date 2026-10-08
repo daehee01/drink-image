@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { alphaBounds, fitHeight, pngFilename } from '../image-utils.js';
+import { alphaBounds, cleanAlpha, fitHeight, pngFilename } from '../image-utils.js';
 test('transparent margins are excluded and bottle fits exactly at height 700', () => {
   const pixels = new Uint8ClampedArray(100 * 200 * 4);
   for (let y = 20; y < 180; y++) for (let x = 30; x < 70; x++) pixels[(y * 100 + x) * 4 + 3] = 255;
@@ -16,4 +16,9 @@ test('filenames preserve Korean and normalize extensions and path characters', (
   assert.equal(pngFilename(' 우리술.png.png '), '우리술.png');
   assert.equal(pngFilename('a/b:c'), 'a-b-c.png');
   assert.equal(pngFilename('...'), '상품이미지-700.png');
+});
+test('faint source shadow stays faint after removal and is dropped above the cutoff', () => {
+  const source = new Uint8Array([0, 0, 0, 30, 0, 0, 0, 255, 0, 0, 0, 0]);
+  assert.deepEqual(Array.from(cleanAlpha(new Uint8Array([9, 9, 9, 254, 9, 9, 9, 250, 9, 9, 9, 200]), source)).filter((_, i) => i % 4 === 3), [30, 250, 0]);
+  assert.deepEqual(Array.from(cleanAlpha(new Uint8Array([9, 9, 9, 254, 9, 9, 9, 250, 9, 9, 9, 200]), source, 64)).filter((_, i) => i % 4 === 3), [0, 250, 0]);
 });
