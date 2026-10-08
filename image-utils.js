@@ -18,6 +18,26 @@ export function cleanAlpha(data, mask, cutoff = 0) {
   }
   return data;
 }
+// Clear blobs much smaller than the largest one (dust, specks the model left in
+// a corner) so they can't stretch the bounds and pull the bottle off center.
+export function dropSpecks(data, width, height, threshold = 8, minRatio = 0.01) {
+  const label = new Int32Array(width * height), sizes = [0], stack = [];
+  for (let start = 0; start < label.length; start++) {
+    if (label[start] || data[start * 4 + 3] <= threshold) continue;
+    const id = sizes.length; let size = 0;
+    label[start] = id; stack.push(start);
+    while (stack.length) {
+      const p = stack.pop(), x = p % width; size++;
+      for (const q of [x > 0 ? p - 1 : -1, x < width - 1 ? p + 1 : -1, p - width, p + width]) {
+        if (q >= 0 && q < label.length && !label[q] && data[q * 4 + 3] > threshold) { label[q] = id; stack.push(q); }
+      }
+    }
+    sizes.push(size);
+  }
+  const keep = sizes.reduce((a, b) => Math.max(a, b), 0) * minRatio;
+  for (let p = 0; p < label.length; p++) if (label[p] && sizes[label[p]] < keep) data[p * 4 + 3] = 0;
+  return data;
+}
 export function fitHeight(bounds, size = 700) {
   const width = bounds.width * size / bounds.height;
   return { x: (size - width) / 2, y: 0, width, height: size };

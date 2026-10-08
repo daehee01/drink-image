@@ -1,4 +1,4 @@
-import { alphaBounds, cleanAlpha, fitHeight, pngFilename } from './image-utils.js';
+import { alphaBounds, cleanAlpha, dropSpecks, fitHeight, pngFilename } from './image-utils.js';
 const $ = id => document.getElementById(id);
 let selected = null, originalURL = null, outputURL = null, busy = false, worker = null, selection = 0, readingClipboard = false;
 const status = (message, error = false) => { $('status').textContent = message; $('status').parentElement.classList.toggle('error', error); };
@@ -89,8 +89,9 @@ $('process').onclick = async () => {
     const pixels = ctx.getImageData(0, 0, source.width, source.height);
     if ($('skip').checked && !pixels.data.some((value, i) => i % 4 === 3 && value < 255)) throw new Error('투명 배경이 없는 이미지예요. 체크를 해제하고 배경을 제거해 주세요.');
     // Colors come from the source; the model only contributes its mask.
-    cleanAlpha(input.pixels.data, pixels.data, $('shadow').checked ? 64 : 0); ctx.putImageData(input.pixels, 0, 0);
-    const bounds = alphaBounds(pixels.data, source.width, source.height), dest = fitHeight(bounds);
+    cleanAlpha(input.pixels.data, pixels.data, $('shadow').checked ? 64 : 0);
+    dropSpecks(input.pixels.data, source.width, source.height); ctx.putImageData(input.pixels, 0, 0);
+    const bounds = alphaBounds(input.pixels.data, source.width, source.height), dest = fitHeight(bounds);
     const out = $('result').getContext('2d'); out.clearRect(0, 0, 700, 700);
     out.imageSmoothingEnabled = true; out.imageSmoothingQuality = 'high';
     out.drawImage(source, bounds.x, bounds.y, bounds.width, bounds.height, dest.x, 0, dest.width, 700);
